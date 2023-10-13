@@ -178,7 +178,7 @@ annot_visit = alt.Chart(cc_visit).mark_point().encode(
 altair_chart = (c_points + annot1 + annot_visit).properties(
     width=700,
     height=700
-).interactive()
+).interactive().configure(background='#FFFFFF')
 
 st.altair_chart(altair_chart, use_container_width=False, theme="streamlit")
 

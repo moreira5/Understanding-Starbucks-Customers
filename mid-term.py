@@ -149,7 +149,7 @@ print(cc)
 annot1 = alt.Chart(cc).mark_text(
     align='left',
     baseline='middle',
-    fontSize = 15,
+    fontSize = 17,
     dx = 7
 ).encode(
     x='x',
@@ -178,7 +178,8 @@ annot_visit = alt.Chart(cc_visit).mark_point().encode(
 altair_chart = (c_points + annot1 + annot_visit).properties(
     width=700,
     height=700
-).interactive().configure(background='#FFFFFF')
+).interactive().configure(background='#FFFFFF').configure_axis(labelColor='black')
 
 st.altair_chart(altair_chart, use_container_width=False, theme="streamlit")
+
 

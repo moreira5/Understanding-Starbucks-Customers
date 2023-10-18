@@ -6,6 +6,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from wordcloud import WordCloud 
 
 ################################ 1. DATA PREPARATION ################################
 data = pd.read_csv('./Starbucks satisfactory survey.csv')
@@ -70,8 +71,8 @@ if selected_tab == "Analysis":
     st.title('Understanding Starbucks Customers :coffee:')
     
     ################################ STREAMLIT: 1. SOCIO-DEMO ################################
-    st.header('Socio-demographics variables', divider='rainbow')
-    st.subheader('Frequency distribution (n=122)')
+    st.header('Socio-demographics variables')
+    st.subheader('Frequency distribution (n=122)', divider='rainbow')
     feature = st.selectbox(
         'Select a variable',
         ('Gender', 'Age', 'Profession', 'Income'),
@@ -96,9 +97,9 @@ if selected_tab == "Analysis":
     st.pyplot(fig)
    
     ################################ STREAMLIT: 2. MCA ################################
-    st.header('Multi Correspondence Analysis', divider='rainbow')
-    ###########
-    
+    st.header('Multi Correspondence Analysis')
+    st.subheader('Analizing Recurrent and Non-recurrent costumers', divider='rainbow')
+ 
     # survey = pd.read_csv('./Starbucks satisfactory survey encode cleaned.csv')
     
     selected_columns = st.multiselect(
@@ -178,7 +179,22 @@ if selected_tab == "Analysis":
     
     st.altair_chart(altair_chart, use_container_width=False, theme="streamlit")
     
+    ################################ STREAMLIT: 3. WORDCLOUD ################################
+    st.header('Wordcloud')
+    st.subheader('Form of communication in Promotions', divider='rainbow')
+    
+    text = ' '.join(str(x) for x in data['Form of communication to Promotions'].tolist())
+    print(text)
 
-st.altair_chart(altair_chart, use_container_width=False, theme="streamlit")
+    plt.figure().clear() 
+    wc=WordCloud(background_color="white").generate(text)
+    plt.imshow(wc)
+    plt.axis('off')
+    st.pyplot(plt)
 
+else:
+    st.header('Survey DataFrame', divider='rainbow')
+    st.write(data)
 
+    
+    

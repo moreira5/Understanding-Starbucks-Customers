@@ -74,6 +74,8 @@ if selected_tab == "Analysis":
     ################################ STREAMLIT: 1. SOCIO-DEMO ################################
     st.header('Socio-demographics variables')
     st.subheader('Frequency distribution (n=122)', divider='rainbow')
+    st.write('- The costumers are well balance between Male and Female')
+    st.write('- The great portion of costumers are younger people, ranging between 20 and 29 years old, and generally are Employers and Students with incomes lower than RM 25.000')
     feature = st.selectbox(
         'Select a variable',
         ('Gender', 'Age', 'Profession', 'Income'),
@@ -103,11 +105,14 @@ if selected_tab == "Analysis":
     st.subheader(':orange[Note:]     Maximaze the plot is recomended :arrow_up_down:', divider='rainbow')
  
     # survey = pd.read_csv('./Starbucks satisfactory survey encode cleaned.csv')
+    # st.write('Conclusions:')
+    st.write('- Monthly Visitors tends to consume by Drive-Thru, expending regular values on each visit')
+    st.write('- Monthly Visitors tends to make short visits, up to one hour')
     
     selected_columns = st.multiselect(
         'Select variables to plot (Recurrent Costumer is always selected))',
         ['Gender', 'Age', 'Profession', 'Income', 'Visit Frequency',
-         'Prefered Form of Consumption', 'Time Spent on Visit','Spend per Visit'],
+         'Prefered Form of Consumption', 'Time Spent on Visit','Spend per Visit', 'Distance to Store'],
         ['Age'])
     
     if (selected_columns == []):
@@ -179,10 +184,13 @@ if selected_tab == "Analysis":
     
     st.altair_chart(altair_chart, use_container_width=False, theme="streamlit")
 
+
     ################################ STREAMLIT: 3. RATES ################################
-    st.header('Starbucks features rates')
+    st.header('Quality rates')
     # meaningful header for the rates
     st.subheader('Frequency distribution (n=122)', divider='rainbow')
+    st.write('- The Rates related to Price Range are not so skewed to higher notes, indicating some insatisfaction of the costumers')
+    st.write('- Consequently, the Importance of Sales and Promotions to Costumers presents higher rates')
     feature = st.selectbox(
         'Select a variable',
         ('Quality Rate', 'Price Range Rate', 'Ambiance Rate', 'WiFi Quality Rate', 'Service Rate', 'Likely for Meetings or Hangouts', 'Sales and Promotion Importance'),
@@ -205,7 +213,6 @@ if selected_tab == "Analysis":
     st.subheader('Form of communication in Promotions', divider='rainbow')
     
     text = ' '.join(str(x) for x in data['Form of communication to Promotions'].tolist())
-    print(text)
 
     plt.figure().clear() 
     wc=WordCloud(background_color="white").generate(text)

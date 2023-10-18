@@ -105,7 +105,8 @@ if selected_tab == "Analysis":
     
     selected_columns = st.multiselect(
         'Select variables to plot (Recurrent Costumer is always selected))',
-        ['Gender', 'Age', 'Profession', 'Income'],
+        ['Gender', 'Age', 'Profession', 'Income', 'Visit Frequency',
+         'Prefered Form of Consumption', 'Time Spent on Visit','Spend per Visit'],
         ['Age'])
     
     if (selected_columns == []):
@@ -172,11 +173,33 @@ if selected_tab == "Analysis":
     altair_chart = (c_points + annot1 + annot_visit + customizations).properties(
         width=700,
         height=700
-    ).interactive().configure(background='#FFFFFF').configure_axis(labelColor='black', grid=True, gridColor='#F8F9F9')
+    ).interactive().configure(background='#FFFFFF').configure_axis(labelColor='black', 
+                                                                   grid=True, gridColor='#F8F9F9', titleColor='black', titleFontSize=18)
     
     st.altair_chart(altair_chart, use_container_width=False, theme="streamlit")
+
+    ################################ STREAMLIT: 3. RATES ################################
+    st.header('Starbucks features rates')
+    # meaningful header for the rates
+    st.subheader('Frequency distribution (n=122)', divider='rainbow')
+    feature = st.selectbox(
+        'Select a variable',
+        ('Quality Rate', 'Price Range Rate', 'Ambiance Rate', 'WiFi Quality Rate', 'Service Rate', 'Likely for Meetings or Hangouts', 'Sales and Promotion Importance'),
+        index=1
+        )
+    # meaningful header for the rates
     
-    ################################ STREAMLIT: 3. WORDCLOUD ################################
+    fig = plt.figure(figsize=(10,5))
+        
+    data=data.sort_values(by=feature)
+    g = sns.histplot(data=data , 
+                 x=data[feature].astype(str), hue="Recurrent Costumer", multiple="stack", shrink=.8, 
+                 palette={'Yes':'#6F8DE0','No':'#C0C0C0'})
+    g.set_xlabel(feature, fontsize=14)
+    g.set_ylabel("Count", fontsize=14)
+    st.pyplot(fig)
+
+    ################################ STREAMLIT: 4. WORDCLOUD ################################
     st.header('Wordcloud')
     st.subheader('Form of communication in Promotions', divider='rainbow')
     
@@ -188,6 +211,8 @@ if selected_tab == "Analysis":
     plt.imshow(wc)
     plt.axis('off')
     st.pyplot(plt)
+    
+    
 
 else:
     st.header('Survey DataFrame', divider='rainbow')

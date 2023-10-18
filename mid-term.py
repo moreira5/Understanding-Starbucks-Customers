@@ -1,13 +1,13 @@
+# Import libraries
 import pandas as pd
 import prince
 import altair as alt
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
-st.title('Understanding Starbucks Customers')
-
-
+################################ 1. DATA PREPARATION ################################
 data = pd.read_csv('./Starbucks satisfactory survey.csv')
 
 rename_dict = {
@@ -59,126 +59,125 @@ data['Spend per Visit'] = data['Spend per Visit'].replace({'Zero' : '1. Zero',
                                         'Around RM20 - RM40' : '3. Around RM20 - RM40',
                                         'More than RM40' : '4. More than RM40'})
 
+################################ STREAMLIT: TABS ################################
+# Create a menu bar with tabs
+selected_tab = st.sidebar.radio("Select a tab:", ["Analysis", "DataFrame"], index=0)
 
-st.header('Survey dataframe', divider='rainbow')
-st.dataframe(data) 
-
-
-st.header('Socio-demographics variables', divider='rainbow')
-st.subheader('Frequency distribution')
-
-def plot_bar(feature,figsize):
-    plot_data = organize_plot_data(feature)
-    generate_plot(plot_data,feature,figsize)
-
-def organize_plot_data(feature):
-    plot_data = data[['Timestamp',feature]] #Timestamp is used only for counting the occurrences
-    plot_data = plot_data.groupby(feature).count()
-    plot_data = plot_data.reset_index()
-    plot_data.columns = [feature,'Counts'] 
-    return plot_data
-
-def generate_plot(plot_data,feature,figsize):
-    #fig = plt.figure() # create the canvas for plotting
-    fig = plt.figure(figsize=figsize)
-    ax = plt.subplot(1,1,1) 
-    ax.bar(x = plot_data[feature], height = plot_data['Counts'])
-    ax.set_title('Costumers by {}'.format(feature))
+# Display content based on the selected tab
+if selected_tab == "Analysis":
+    # st.header("Analysis Tab")
+    # Analysis content here
+    st.title('Understanding Starbucks Customers :coffee:')
+    
+    ################################ STREAMLIT: 1. SOCIO-DEMO ################################
+    st.header('Socio-demographics variables', divider='rainbow')
+    st.subheader('Frequency distribution (n=122)')
+    feature = st.selectbox(
+        'Select a variable',
+        ('Gender', 'Age', 'Profession', 'Income'),
+        index=1
+        )
+          
+    fig = plt.figure(figsize=(10,5))
+    if (feature == 'Income'):
+        plt.xticks(rotation=90)
+    
+    # This If below is just to avoid the hue color swicht around
+    if (feature == 'Profession'):
+        pass
+    else:
+        data = data.sort_values(by=feature)
+        
+    g = sns.histplot(data=data, 
+                 x=feature, hue="Recurrent Costumer", multiple="stack", shrink=.8, 
+                 palette={'Yes':'#6F8DE0','No':'#C0C0C0'})
+    g.set_xlabel(feature, fontsize=14)
+    g.set_ylabel("Count", fontsize=14)
     st.pyplot(fig)
-
-feature = st.selectbox(
-    'Select a variable',
-    ('Gender', 'Age', 'Profession', 'Income', 'Visit Frequency', 'Spend per Visit', 'Membership'),
-    index=1
+   
+    ################################ STREAMLIT: 2. MCA ################################
+    st.header('Multi Correspondence Analysis', divider='rainbow')
+    ###########
+    
+    # survey = pd.read_csv('./Starbucks satisfactory survey encode cleaned.csv')
+    
+    selected_columns = st.multiselect(
+        'Select variables to plot (Recurrent Costumer is always selected))',
+        ['Gender', 'Age', 'Profession', 'Income'],
+        ['Age'])
+    
+    if (selected_columns == []):
+        selected_columns = ['Age']
+        st.write('Age is selected by default')
+    
+    selected_columns = ['Recurrent Costumer'] + selected_columns
+    
+    mca_data = data[selected_columns]
+    mca = prince.MCA()
+    mca.fit(mca_data)
+    
+    # extract the column coordinate dataframe, and change the column names
+    cc = mca.column_coordinates(mca_data).reset_index()
+    cc.columns = ['name', 'x', 'y']
+    
+    # extract the row coordinates dataframe, and change the column names
+    rc = mca.row_coordinates(mca_data).reset_index()
+    rc.columns = ['name', 'x', 'y']
+    
+    # combine the dataframes
+    crc_df = pd.concat([cc, rc], ignore_index=True)
+    #print(cc)
+    #print(crc_df)
+    
+    # plot and annotate
+    points = mca.plot(mca_data)
+    
+    # filter rows whose name start with 'recurrent'
+    cc_recurrent = cc[cc['name'].str.startswith('Recurrent')]
+    cc_other = cc[~cc['name'].str.startswith('Recurrent')]
+    
+    c_points = alt.Chart(cc_other).mark_point(filled=True).encode(
+        x='x',
+        y='y',
+        color=alt.value('blue'),
+        size=alt.value(150)
     )
-
-plot_bar(feature, figsize=(10,6))
-
-
-st.header('Multi Correspondence Analysis', divider='rainbow')
-###########
-survey = pd.read_csv('./Starbucks satisfactory survey encode cleaned.csv')
-
-selected_columns = st.multiselect(
-    'Select variables to plot (VisitNo is always selected))',
-    ['gender', 'age', 'status', 'income', 'method',
-       'timeSpend', 'location', 'membershipCard', 'spendPurchase'],
-    ['age'])
-
-selected_columns = ['visitNo'] + selected_columns
-# st.write('You selected:', options)
-
-# selected_columns = ['gender', 'age', 'status', 'income']
-
-mca_data = survey[selected_columns]
-mca = prince.MCA()
-mca.fit(mca_data)
-
-# extract the column coordinate dataframe, and change the column names
-cc = mca.column_coordinates(mca_data).reset_index()
-cc.columns = ['name', 'x', 'y']
-
-# extract the row coordinates dataframe, and change the column names
-rc = mca.row_coordinates(mca_data).reset_index()
-rc.columns = ['name', 'x', 'y']
-
-# combine the dataframes
-crc_df = pd.concat([cc, rc], ignore_index=True)
-print(cc)
-print(crc_df)
-
-# plot and annotate
-points = mca.plot(mca_data)
-
-# filter rows whose name start with 'visit'
-cc_visit = cc[cc['name'].str.startswith('visit')]
-cc_other = cc[~cc['name'].str.startswith('visit')]
-
-c_points = alt.Chart(cc_other).mark_point().encode(
-    x='x',
-    y='y',
-    color=alt.value('blue')
-)
-
-print(points)
-print(cc)
-
-
-
-
-annot1 = alt.Chart(cc).mark_text(
-    align='left',
-    baseline='middle',
-    fontSize = 17,
-    dx = 7
-).encode(
-    x='x',
-    y='y',
-    text='name'
-)
-
-# annot_visit = alt.Chart(cc_visit).mark_text(
-#     align='left',
-#     baseline='middle',
-#     fontSize = 10,
-#     dx = 7
-# ).encode(
-#     x='x',
-#     y='y',
-#     text='name',
-#     color='name'
-# )
-
-annot_visit = alt.Chart(cc_visit).mark_point().encode(
-    x='x',
-    y='y',
-    color=alt.value('red')
+    
+    customizations = alt.Chart(cc_other, title="The shorter distance, the more similar they are").mark_circle().encode(
+        alt.X('x').axis(labels=False).title('Dim 1'),
+        alt.Y('y').axis(labels=False).title('Dim 2')
     )
+       
+    annot1 = alt.Chart(cc).mark_text(
+        align='left',
+        baseline='middle',
+        fontSize = 17,
+        dx = 10
+    ).encode(
+        x='x',
+        y='y',
+        text='name',
+    )
+    
+    annot_visit = alt.Chart(cc_recurrent).mark_point(filled=True).encode(
+        x='x',
+        y='y',
+        color=alt.value('red'),
+        size=alt.value(150)
+        )
 
-altair_chart = (c_points + annot1 + annot_visit).properties(
-    width=700,
-    height=700
-).interactive().configure(background='#FFFFFF').configure_axis(labelColor='black')
+
+    
+    altair_chart = alt.layer(c_points + annot1 + annot_visit + customizations).configure_axis(
+        grid=True, bandPosition=0.5, gridOpacity=0.05, gridColor='#000000')
+    
+    altair_chart = (c_points + annot1 + annot_visit + customizations).properties(
+        width=700,
+        height=700
+    ).interactive().configure(background='#FFFFFF').configure_axis(labelColor='black')
+    
+    st.altair_chart(altair_chart, use_container_width=False, theme="streamlit")
+    
 
 st.altair_chart(altair_chart, use_container_width=False, theme="streamlit")
 

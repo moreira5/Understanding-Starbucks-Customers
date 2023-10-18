@@ -98,7 +98,8 @@ if selected_tab == "Analysis":
    
     ################################ STREAMLIT: 2. MCA ################################
     st.header('Multi Correspondence Analysis')
-    st.subheader('Analizing Recurrent and Non-recurrent costumers', divider='rainbow')
+    st.subheader('Analizing Recurrent and Non-recurrent costumers')
+    st.subheader(':orange[Note:]     Maximaze the plot is recomended :arrow_up_down:', divider='rainbow')
  
     # survey = pd.read_csv('./Starbucks satisfactory survey encode cleaned.csv')
     
@@ -108,8 +109,8 @@ if selected_tab == "Analysis":
         ['Age'])
     
     if (selected_columns == []):
-        selected_columns = ['Age']
-        st.write('Age is selected by default')
+        selected_columns = ['Recurrent Costumer']
+        #st.write('Age is selected by default')
     
     selected_columns = ['Recurrent Costumer'] + selected_columns
     
@@ -166,16 +167,12 @@ if selected_tab == "Analysis":
         color=alt.value('red'),
         size=alt.value(150)
         )
-
-
     
-    altair_chart = alt.layer(c_points + annot1 + annot_visit + customizations).configure_axis(
-        grid=True, bandPosition=0.5, gridOpacity=0.05, gridColor='#000000')
-    
+
     altair_chart = (c_points + annot1 + annot_visit + customizations).properties(
         width=700,
         height=700
-    ).interactive().configure(background='#FFFFFF').configure_axis(labelColor='black')
+    ).interactive().configure(background='#FFFFFF').configure_axis(labelColor='black', grid=True, gridColor='#F8F9F9')
     
     st.altair_chart(altair_chart, use_container_width=False, theme="streamlit")
     

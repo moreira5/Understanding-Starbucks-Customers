@@ -69,6 +69,7 @@ if selected_tab == "Analysis":
     # st.header("Analysis Tab")
     # Analysis content here
     st.title('Understanding Starbucks Customers :coffee:')
+    st.subheader('A survey helps us to identify differences between recurrent and non-recurrent costumers', divider='rainbow')
     
     ################################ STREAMLIT: 1. SOCIO-DEMO ################################
     st.header('Socio-demographics variables')
